@@ -4,6 +4,8 @@ Software to process scientific literature (titles/abstracts). The software is pr
 
 This notebook utilizes a combination of Python spaCy rule based matcher and regular expressions to create screening patterns corresponding to various subject categories and study designs. While the code was developed to categorise COVID-19 datasets, the implemented pattern matching code can screen for supported categories in any datasets.
 
+This work is described in the following publication. Please cite this paper if you use this software in your research.   
+_Sood MR, Sharp S, McFarlane E, Willans R, Hopkins K, Karpusheff J, Glen F. Managing the evidence infodemic: Automation approaches used for developing NICE COVID-19 living guidelines. medRxiv. 2022 Jan 1._
 
 
 
