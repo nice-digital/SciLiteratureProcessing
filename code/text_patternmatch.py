@@ -22,12 +22,15 @@ def match_studydesign_RCT(record):
         try:
             abstract = record['abstract']
             doc_abstract = nlp(abstract)
-            pattern_abstract_rct = [[{'LOWER': {'REGEX': '^random'}}]]
+            pattern_abstract_rct = [[{'LOWER': {'REGEX': '^(random|parallel$|factorial$|crossover$)'}}],
+                                    [{'LOWER': 'cross'}, {'LOWER': 'over'}],
+                                    [{'LOWER': {'REGEX': '^(single|double|triple|quadruple)$'}}, {'LOWER':'blinded'}]]
             matcher.add("rct", pattern_abstract_rct)
             matches_abstract = matcher(doc_abstract, as_spans=True)
             if len(matches_abstract) > 0:
                 matcher.remove("rct")
-                pattern_abstract_rct = [[{"LOWER": 'results'}]]
+                pattern_abstract_rct = [[{"LOWER": 'results'}],
+                                        [{'LOWER': {'REGEX': '^(outcome|significant)'}}]]
                 matcher.add("rct", pattern_abstract_rct)
                 matches_abstract = matcher(doc_abstract, as_spans=True)
                 if len(matches_abstract) > 0:
@@ -51,21 +54,30 @@ def match_studydesign_systematicrev(record):
             -1 if an error occurs when processing title
     """
     try:
-        matcher = Matcher(nlp.vocab)
-        title = record['title']
-        doc_title = nlp(title)
-        pattern_title_systematic = [[{'LOWER': 'systematic'}, {'IS_ASCII': True, 'OP': '?'},{'LOWER': 'review'}]]
-        pattern_title_meta = [[{'LOWER': 'meta'}, {'LOWER': 'analysis'}]]
-        matcher.add("sys", pattern_title_systematic)
-        matcher.add("meta", pattern_title_meta)
-        matches_title = matcher(doc_title, as_spans=True)
-        if len(matches_title) > 0:
-            return 1
-        else:
+      matcher = Matcher(nlp.vocab)
+      title = record['title']
+      doc_title = nlp(title)
+      pattern_title_systematic = [[{'LOWER': {'REGEX': '^systematic'}}, {'IS_ASCII': True, 'OP': '?'},{'LOWER': {'REGEX': '^review'}}]]
+      pattern_title_meta = [[{'LOWER': 'meta'}, {'LOWER': 'analysis'}]]
+      matcher.add("sys", pattern_title_systematic)
+      matcher.add("meta", pattern_title_meta)
+      matches_title = matcher(doc_title, as_spans=True)
+      if len(matches_title) > 0:
+        return 1
+      else:
+        try:
+          abstract = record['abstract']
+          doc = nlp(abstract)
+          matches_abstract = matcher(doc, as_spans=True)
+          if len(matches_abstract) > 0:
+            return 2
+          else:
             return 0
+        except Exception as e:
+          return -2
     except Exception as e:
-        print(e)
-        return -1
+      print(e)
+      return -1
 
 
 def match_studydesign_observational(record):
@@ -181,8 +193,12 @@ def match_longcovid(record, include_abstract):
         pattern_title = [[{"LOWER": {"REGEX": ('^(persist|protract|postdischarge$|postviral$|postcoronavirus$|postacute$|sequelae$|convalescent$|following$)')}}],
                          [{"LOWER": {"REGEX": ('^long+')}}, {"LOWER": {"REGEX": ('^(covid|term|lasting)$')}}],
                          [{"LOWER": 'post'}, {"LOWER": {"REGEX": ('^(covid|discharge|acute|sars|viral|critical)$')}}],
+                         [{"LOWER": 'post'}, {"LOWER": {"REGEX": ('^(infect)')}}],
                          [{'LOWER': 'follow'}, {'LOWER': 'up'}],
-                         [{'LOWER': 'months'}, {'LOWER': 'after'}]]
+                         [{'LOWER': 'months'}, {'LOWER': 'after'}],
+                         [{'LOWER': {"REGEX": ('^(four|six|twelve)$')}}, {'LOWER': {"REGEX": ('^(month|months)$')}}],
+                         [{'LIKE_NUM': True, 'OP': '+'}, {'LOWER':{"REGEX": ('^(month|months)$')}}]]
+        
         matcher.add("longcovid", pattern_title)
         matches_title = matcher(doc_title)
         if (len(matches_title) > 0):
