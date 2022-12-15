@@ -57,7 +57,7 @@ def match_studydesign_systematicrev(record):
       matcher = Matcher(nlp.vocab)
       title = record['title']
       doc_title = nlp(title)
-      pattern_title_systematic = [[{'LOWER': {'REGEX': '^systematic'}}, {'IS_ASCII': True, 'OP': '?'},{'LOWER': {'REGEX': '^review'}}]]
+      pattern_title_systematic = [[{'LOWER': {'REGEX': '^systematic'}}, {'IS_ASCII': True, 'OP': '{,2}'},{'LOWER': {'REGEX': '^review'}}]]
       pattern_title_meta = [[{'LOWER': 'meta'}, {'LOWER': 'analysis'}]]
       matcher.add("sys", pattern_title_systematic)
       matcher.add("meta", pattern_title_meta)
@@ -86,6 +86,8 @@ def match_studydesign_systematicrev(record):
                       return 3
                 else:
                     return 0
+            else:
+                return 0
         except Exception as e:
           return -2
     except Exception as e:
