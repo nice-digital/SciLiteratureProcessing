@@ -72,7 +72,20 @@ def match_studydesign_systematicrev(record):
           if len(matches_abstract) > 0:
             return 2
           else:
-            return 0
+            pattern_db = [[{'LOWER': {"IN": ["pubmed", "embase", "medline", "cochrane"]}}]]
+            matcher.remove("sys")
+            matcher.remove("meta")
+            matcher.add("db", pattern_db)
+            matches_abstract = matcher(doc, as_spans=True)
+            if (len(matches_abstract) > 1):
+                matched_items = []
+                for span in matches_abstract:
+                    matched_items.append(span.text.lower())
+                matched_items = list(set(matched_items))
+                if (len(matched_items) > 1):
+                      return 3
+                else:
+                    return 0
         except Exception as e:
           return -2
     except Exception as e:
